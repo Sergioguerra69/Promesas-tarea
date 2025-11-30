@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gestor de Presupuestos</title>
+    <style>
+      /* CSS */
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 20px;
+        background: #f0f0f0;
+        line-height: 1.4;
+      }
+
+      h1,
+      h2,
+      h3 {
+        margin-bottom: 15px;
+        color: #333;
+      }
+
+      .container {
+        background: white;
+        padding: 20px;
+        margin-bottom: 20px;
+        border-radius: 5px;
+        border: 1px solid #ddd;
+      }
+
+      .total-section {
+        background: #4a6fa5;
+        color: white;
+        text-align: center;
+      }
+
+      .form-group {
+        margin-bottom: 15px;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+      }
+
+      input,
+      button {
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        width: 100%;
+      }
+
+      button {
+        background: #4caf50;
+        color: white;
+        border: none;
+        cursor: pointer;
+        margin-top: 10px;
+      }
+
+      button:hover {
+        background: #45a049;
+      }
+
+      .hidden {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Gestor de Presupuestos</h1>
+    <p>Práctica de componentes web - 2 DAW</p>
+
+    <!-- Sección para mostrar el total de gastos -->
+    <div id="total-gastos" class="container total-section">
+      <h2>Total Gastado: <span id="total">0.00</span> €</h2>
+    </div>
+
+    <!-- Sección para el formulario de crear gastos -->
+    <div id="formulario-container" class="container">
+      <h2>Añadir Nuevo Gasto</h2>
+      <!-- El formulario se creará desde JavaScript -->
+    </div>
+
+    <!-- Sección para listar los gastos -->
+    <div id="listado-gastos" class="container">
+      <h2>Listado de Gastos</h2>
+      <!-- Los gastos se mostrarán aquí con componentes personalizados -->
+    </div>
+
+    <!-- TEMPLATE PARA EL COMPONENTE PERSONALIZADO -->
+    <template id="template-gasto">
+      <div class="gasto-item">
+        <!-- Capas para mostrar los datos del gasto -->
+        <div class="gasto-datos">
+          <div class="gasto-descripcion"></div>
+          <div class="gasto-valor"></div>
+          <div class="gasto-fecha"></div>
+          <div class="etiquetas-container"></div>
+        </div>
+
+        <!-- Botones de acción -->
+        <div class="acciones">
+          <button class="btn-editar">Editar</button>
+          <button class="btn-borrar">Borrar</button>
+        </div>
+
+        <!-- Formulario de edición (oculto inicialmente) -->
+        <div class="formulario-edicion hidden">
+          <h3>Editar Gasto</h3>
+          <div class="form-group">
+            <label>Descripción:</label>
+            <input type="text" class="edit-descripcion" required />
+          </div>
+          <div class="form-group">
+            <label>Valor (€):</label>
+            <input
+              type="number"
+              class="edit-valor"
+              step="0.01"
+              min="0.01"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label>Fecha:</label>
+            <input type="date" class="edit-fecha" required />
+          </div>
+          <div class="form-group">
+            <label>Etiquetas (separadas por comas):</label>
+            <input
+              type="text"
+              class="edit-etiquetas"
+              placeholder="comida, transporte, ocio..."
+            />
+          </div>
+          <div class="acciones">
+            <button class="btn-guardar" type="button">Guardar</button>
+            <button class="btn-cancelar" type="button">Cancelar</button>
+          </div>
+        </div>
+      </div>
+    </template>
+
+    <!-- Cargamos los scripts -->
+    <script type="module" src="js/gestionPresupuesto.js"></script>
+    <script type="module" src="js/gestionPresupuestowebV1.js"></script>
+    <script type="module" src="js/gestionPresupuestoWebV2.js"></script>
+  </body>
+</html>

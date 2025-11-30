@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestor de Gastos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .seccion {
+            background: #e8f4f8;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+            border-left: 4px solid #007bff;
+        }
+        input, button {
+            padding: 10px;
+            margin: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .gasto-item {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            background: white;
+        }
+        .btn-eliminar {
+            background: #dc3545;
+            width: auto;
+        }
+        .btn-eliminar:hover {
+            background: #c82333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Gestor de Gastos</h1>
+        
+        <div class="seccion">
+            <h2>Seleccionar Usuario</h2>
+            <form id="formulario-usuario">
+                <input type="text" id="nombre-usuario" placeholder="usuario1, usuario2..." required>
+                <button type="submit">Cargar Gastos</button>
+            </form>
+            <div id="info-usuario" style="display: none; margin-top: 10px; padding: 10px; background: #d4edda; border-radius: 4px;"></div>
+        </div>
+
+        <div class="seccion" id="formulario-gasto-container" style="display: none;">
+            <h2>Añadir Gasto</h2>
+            <form id="formulario-gasto">
+                <input type="text" id="descripcion" placeholder="Descripcion del gasto" required>
+                <input type="number" id="valor" step="0.01" placeholder="Valor en euros" required>
+                <input type="date" id="fecha" required>
+                <button type="submit">Añadir Gasto</button>
+            </form>
+        </div>
+
+        <div class="seccion">
+            <h2>Lista de Gastos</h2>
+            <div id="gastos-container">
+                <p>Selecciona un usuario para ver sus gastos</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let usuarioActual = '';
+
+        // Convertir timestamp a fecha legible
+        function timestampAFecha(timestamp) {
+            const fecha = new Date(timestamp);
+            return fecha.toLocaleDateString('es-ES');
+        }
+
+        // Convertir fecha a timestamp
+        function fechaATimestamp(fechaString) {
+            return new Date(fechaString).getTime();
+        }
+
+        // Cuando se envia el formulario de usuario
+        document.getElementById('formulario-usuario').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const usuario = document.getElementById('nombre-usuario').value;
+            usuarioActual = usuario;
+            
+            document.getElementById('formulario-gasto-container').style.display = 'block';
+            document.getElementById('info-usuario').style.display = 'block';
+            document.getElementById('info-usuario').innerHTML = 'Usuario actual: <strong>' + usuario + '</strong>';
+            
+            cargarGastosUsuario(usuario);
+        });
+
+        // Cargar gastos del usuario
+        function cargarGastosUsuario(usuario) {
+            console.log('Cargando gastos para:', usuario);
+            
+            fetch('http://localhost:3000/' + usuario)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Error al cargar gastos');
+                    }
+                    return response.json();
+                })
+                .then(gastos => {
+                    console.log('Gastos cargados:', gastos);
+                    mostrarGastos(gastos);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    mostrarGastos([]);
+                    alert('Usuario no encontrado. Puedes añadir gastos para crearlo.');
+                });
+        }
+
+        // Mostrar gastos en la pagina
+        function mostrarGastos(gastos) {
+            const container = document.getElementById('gastos-container');
+            
+            if (gastos.length === 0) {
+                container.innerHTML = '<p>No hay gastos registrados</p>';
+                return;
+            }
+
+            let html = '';
+            let total = 0;
+            
+            gastos.forEach(gasto => {
+                total += parseFloat(gasto.valor);
+                const fechaLegible = timestampAFecha(gasto.fecha);
+                
+                html += `
+                    <div class="gasto-item">
+                        <div class="info-gasto">
+                            <strong>${gasto.descripcion}</strong><br>
+                            <small>Valor: €${gasto.valor} | Fecha: ${fechaLegible}</small>
+                        </div>
+                        <button class="btn-eliminar" onclick="eliminarGasto('${gasto.id}')">Eliminar</button>
+                    </div>
+                `;
+            });
+            
+            html = '<p><strong>Total gastado: €' + total.toFixed(2) + '</strong></p>' + html;
+            container.innerHTML = html;
+        }
+
+        // Añadir nuevo gasto
+        document.getElementById('formulario-gasto').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            if (!usuarioActual) {
+                alert('Selecciona un usuario primero');
+                return;
+            }
+
+            const descripcion = document.getElementById('descripcion').value;
+            const valor = parseFloat(document.getElementById('valor').value);
+            const fecha = document.getElementById('fecha').value;
+
+            if (!descripcion || isNaN(valor) || !fecha) {
+                alert('Completa todos los campos correctamente');
+                return;
+            }
+
+            const nuevoGasto = {
+                descripcion: descripcion,
+                valor: valor,
+                fecha: fechaATimestamp(fecha)
+            };
+
+            fetch('http://localhost:3000/' + usuarioActual, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(nuevoGasto)
+            })
+            .then(response => response.json())
+            .then(() => {
+                cargarGastosUsuario(usuarioActual);
+                this.reset();
+                document.getElementById('fecha').valueAsDate = new Date();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al añadir el gasto');
+            });
+        });
+
+        // Eliminar gasto
+        function eliminarGasto(gastoId) {
+            if (!confirm('¿Estás seguro de que quieres eliminar este gasto?')) return;
+            
+            fetch('http://localhost:3000/' + usuarioActual + '/' + gastoId, {
+                method: 'DELETE'
+            })
+            .then(() => cargarGastosUsuario(usuarioActual))
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al eliminar el gasto');
+            });
+        }
+
+        // Fecha actual por defecto
+        window.addEventListener('load', function() {
+            document.getElementById('fecha').valueAsDate = new Date();
+        });
+    </script>
+</body>
+</html>
